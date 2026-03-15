@@ -2,9 +2,12 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import About from "./pages/About";
 import HowToUse from "./pages/HowToUse";
 import Output from "./pages/Output";
-import Profile from "./pages/Profile"; // adjust if needed
+import Profile from "./pages/Profile";
 import Landing from "./pages/Landing";
-import Combinations from "./pages/components/Combinations.jsx"; // adjust if needed
+import Combinations from "./pages/components/Combinations.jsx";
+
+// ADD THIS IMPORT BELOW
+import PreviousOutputsPage from "./pages/previous_outputs"; 
 
 import { useAuthUser } from "./firebase/useAuthUser";
 
@@ -29,10 +32,11 @@ export default function App() {
       />
       <Route path="/about" element={<About />} />
       <Route path="/how" element={<HowToUse />} />
-      <Route path="/output" element={<Output />} />
-      <Route path="/profile" element={
-          <Profile />
-      } />
+      
+      {/* CHANGE 'path' TO "/history" TO MATCH YOUR NAVIGATION */}
+      <Route path="/history" element={<PreviousOutputsPage />} />
+      
+      <Route path="/profile" element={<Profile />} />
     </Routes>
   );
 }

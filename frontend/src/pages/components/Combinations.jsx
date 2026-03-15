@@ -553,10 +553,11 @@ const createCsvBlob = async ({ combos, size, generatedAt } = {}) => {
 
 
 
-
- const generateCombos = async ({ size, weight_step }) => {
+const generateCombos = async ({ size, weight_step }) => {
   setGenerating(true);
   setLastK(size);
+  setOsfStatus("uploading");
+  setOsfMsg("Generating and Uploading...");
 
   try {
     const res = await fetch("https://generatingcombinations-production.up.railway.app/generate-combinations", {
@@ -570,64 +571,37 @@ const createCsvBlob = async ({ combos, size, generatedAt } = {}) => {
     const data = await res.json();
     const combos = data.combinations || [];
     const ts = data.generated_at || "";
+    const newOsfUrl = data.osf_file_page_url || data.osf_url;
 
+    // Update all states at once
     setComboResults(combos);
     setGeneratedAt(ts);
+    if (newOsfUrl) setOsfUrl(newOsfUrl);
+    
+    setOsfStatus("success");
+    setOsfMsg("Saved to OSF");
 
-    await uploadToOsf({ combos, size, generatedAt: ts });
-  } catch (e) {
-    console.error(e);
-    alert("Failed to generate combinations (check console).");
-  } finally {
-    setGenerating(false);
-  }
-};
-
-
-
-
-
-const uploadToOsf = async ({ combos, size, generatedAt }) => {
-  setOsfStatus("uploading");
-  setOsfMsg("Uploading to OSF…");
-
-try {
-    const res = await fetch("https://generatingcombinations-production.up.railway.app/generate-combinations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items: cleanedItems, size, weight_step }),
+    // Log to recent outputs
+    addRecentOutput({
+      osf_url: newOsfUrl,
+      created_at: ts || new Date().toISOString(),
+      k_value: size,
+      item_count: cleanedItems.length,
+      input_preview: cleanedItems.slice(0, 5).join(", ") + (cleanedItems.length > 5 ? "..." : ""),
     });
 
-    if (!res.ok) throw new Error(await res.text());
-
-    const data = await res.json();
-    const combos = data.combinations || [];
-    const ts = data.generated_at || "";
-
-    // 1. Update state immediately so the user sees the table
-    setComboResults(combos);
-    setGeneratedAt(ts);
-
-    // 2. Automatically trigger the background save/upload
-    // We pass the data directly to avoid waiting for state updates
-    await uploadToOsf({ combos, size, generatedAt: ts });
-
-    // Inside uploadToOsf...
-addRecentOutput({
-  osf_url: data.osf_file_page_url,
-  created_at: generatedAt || new Date().toISOString(),
-  k_value: size, // New: helpful to track what K was used
-  item_count: cleanedItems.length, // New: track list size
-  input_preview: cleanedItems.slice(0, 5).join(", ") + (cleanedItems.length > 5 ? "..." : ""),
-});
-    
   } catch (e) {
     console.error(e);
+    setOsfStatus("error");
+    setOsfMsg("Upload failed");
     alert("Failed to generate combinations.");
   } finally {
     setGenerating(false);
   }
 };
+
+// You can safely remove the old uploadToOsf function entirely 
+// as its logic is now inside generateCombos.
 
 
 

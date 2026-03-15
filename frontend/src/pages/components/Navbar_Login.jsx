@@ -188,10 +188,10 @@ const doSignOut = async () => {
     />
 
     <MenuBtn
-      label="Previous outputs"
-      onClick={() => {
-        setOpen(false);
-        navigate("/output");
+    label="Previous outputs"
+    onClick={() => {
+    setOpen(false);
+    navigate("/history"); // Changed to /history
       }}
     />
 

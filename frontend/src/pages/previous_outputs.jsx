@@ -6,69 +6,71 @@ export default function OutputPage() {
   const [outputs, setOutputs] = useState([]);
 
   useEffect(() => {
+    // Load data on mount
     setOutputs(getRecentOutputs());
+
+    // Listen for updates while the page is open
+    const handleUpdate = () => setOutputs(getRecentOutputs());
+    window.addEventListener("recent_outputs_updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+
+    return () => {
+      window.removeEventListener("recent_outputs_updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
   }, []);
 
   return (
     <div className="bg">
       <div className="layer">
         <Navbar />
-
         <main className="container hero">
-          <div className="card" style={{ padding: "clamp(20px, 5vw, 40px)" }}>
-            <div style={{ fontWeight: 950, fontSize: 22, marginBottom: 12 }}>
+          <div className="card" style={{ padding: "clamp(20px, 5vw, 40px)", minHeight: "300px" }}>
+            <div style={{ fontWeight: 950, fontSize: 24, marginBottom: 8 }}>
               Previous outputs
             </div>
-
-            <div style={{ color: "rgba(255,255,255,0.6)", marginBottom: 18 }}>
+            <div style={{ color: "rgba(255,255,255,0.5)", marginBottom: 24, fontSize: 14 }}>
               Last 10 published outputs stored on this device.
             </div>
 
             {outputs.length === 0 ? (
-              <div style={{ color: "rgba(255,255,255,0.55)" }}>
-                No outputs yet.
+              /* EMPTY STATE */
+              <div style={{ 
+                padding: "40px", 
+                textAlign: "center", 
+                border: "1px dashed rgba(255,255,255,0.1)", 
+                borderRadius: 20 
+              }}>
+                <div style={{ color: "rgba(255,255,255,0.4)", fontWeight: 700 }}>
+                  No recent outputs.
+                </div>
+                <p style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", marginTop: 4 }}>
+                  Start a new session to see history here.
+                </p>
               </div>
             ) : (
+              /* LIST STATE */
               <div style={{ display: "grid", gap: 10 }}>
-                {outputs.map((o, i) => {
+                {outputs.map((o) => {
                   const d = new Date(o.created_at);
                   const label = d.toLocaleString(undefined, {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
+                    month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"
                   });
 
                   return (
-                    <div
-                      key={i}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        padding: "12px 14px",
-                        borderRadius: 14,
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.08)",
-                      }}
-                    >
-                      <div style={{ fontWeight: 850, color: "rgba(255,255,255,0.85)" }}>
-                        {label}
+                    <div key={o.id} style={{
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                      padding: "14px 18px", borderRadius: 14,
+                      background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)"
+                    }}>
+                      <div>
+                        <div style={{ fontWeight: 850, color: "white" }}>{label}</div>
+                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>{o.input_preview}</div>
                       </div>
-
                       <button
                         className="pill"
-                        onClick={() => window.open(o.osf_url, "_blank", "noopener,noreferrer")}
-                        style={{
-                          padding: "8px 12px",
-                          borderRadius: 10,
-                          background: "rgba(106,217,255,0.12)",
-                          border: "1px solid rgba(106,217,255,0.30)",
-                          color: "white",
-                          fontWeight: 900,
-                          cursor: "pointer",
-                        }}
+                        onClick={() => window.open(o.osf_url, "_blank")}
+                        style={{ padding: "8px 14px", cursor: "pointer", fontWeight: 900 }}
                       >
                         View →
                       </button>
@@ -79,24 +81,12 @@ export default function OutputPage() {
             )}
 
             {outputs.length > 0 && (
-              <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
-                <button
-                  className="pill"
-                  onClick={() => {
-                    clearRecentOutputs();
-                    setOutputs([]);
-                  }}
-                  style={{
-                    padding: "10px 12px",
-                    borderRadius: 12,
-                    background: "rgba(255,70,90,0.10)",
-                    border: "1px solid rgba(255,70,90,0.25)",
-                    color: "white",
-                    cursor: "pointer",
-                    fontWeight: 900,
-                  }}
+              <div style={{ marginTop: 20, textAlign: "right" }}>
+                <button 
+                  onClick={() => confirm("Clear all history?") && clearRecentOutputs()}
+                  style={{ background: "none", border: "none", color: "rgba(255,100,100,0.5)", cursor: "pointer", fontSize: 12, fontWeight: 800 }}
                 >
-                  Clear history
+                  Clear History
                 </button>
               </div>
             )}

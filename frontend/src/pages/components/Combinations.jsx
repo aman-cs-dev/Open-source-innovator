@@ -591,40 +591,41 @@ const uploadToOsf = async ({ combos, size, generatedAt }) => {
   setOsfStatus("uploading");
   setOsfMsg("Uploading to OSF…");
 
-  try {
-    const { blob, filename } = await createCsvBlob({ combos, size, generatedAt });
-
-    const form = new FormData();
-    form.append("file", blob, filename);
-    form.append("job_id", `combo_${size}_${Date.now()}`);
-
-    const res = await fetch("https://generatingcombinations-production.up.railway.app/upload-to-osf", {
+try {
+    const res = await fetch("https://generatingcombinations-production.up.railway.app/generate-combinations", {
       method: "POST",
-      body: form,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: cleanedItems, size, weight_step }),
     });
+
+    if (!res.ok) throw new Error(await res.text());
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data?.detail || "OSF upload failed");
+    const combos = data.combinations || [];
+    const ts = data.generated_at || "";
 
-    // ✅ Make UI say only "View"
-    setOsfStatus("success");
-    setOsfMsg("View");
-    setOsfUrl(data.osf_file_page_url || "");
+    // 1. Update state immediately so the user sees the table
+    setComboResults(combos);
+    setGeneratedAt(ts);
 
-    // ✅ Save to localStorage (last 10)
-    addRecentOutput({
-      osf_url: data.osf_file_page_url,
-      created_at: generatedAt || new Date().toISOString(),
-      input_preview:
-        cleanedItems.slice(0, 10).join(", ") + (cleanedItems.length > 10 ? " …" : ""),
-    });
+    // 2. Automatically trigger the background save/upload
+    // We pass the data directly to avoid waiting for state updates
+    await uploadToOsf({ combos, size, generatedAt: ts });
 
-    return data;
+    // Inside uploadToOsf...
+addRecentOutput({
+  osf_url: data.osf_file_page_url,
+  created_at: generatedAt || new Date().toISOString(),
+  k_value: size, // New: helpful to track what K was used
+  item_count: cleanedItems.length, // New: track list size
+  input_preview: cleanedItems.slice(0, 5).join(", ") + (cleanedItems.length > 5 ? "..." : ""),
+});
+    
   } catch (e) {
     console.error(e);
-    setOsfStatus("error");
-    setOsfMsg("OSF upload failed");
-    throw e;
+    alert("Failed to generate combinations.");
+  } finally {
+    setGenerating(false);
   }
 };
 
@@ -885,7 +886,8 @@ const uploadToOsf = async ({ combos, size, generatedAt }) => {
   }}
 />
 
-{osfStatus === "success" && !!osfUrl && showResults && (
+{/* Change 'showResults' to 'comboResults.length > 0' */}
+{osfStatus === "success" && !!osfUrl && comboResults.length > 0 && (
   <button
     type="button"
     className="pill"
@@ -893,11 +895,11 @@ const uploadToOsf = async ({ combos, size, generatedAt }) => {
       e.stopPropagation();
       window.open(osfUrl, "_blank", "noopener,noreferrer");
     }}
+    style={{ marginTop: '10px' }} // Added a little styling help
   >
     View on OSF
   </button>
 )}
-
 
 
 

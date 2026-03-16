@@ -1,6 +1,6 @@
 // src/pages/Profile.jsx
 import { useMemo, useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 
 import Navbar from "./components/Navbar_Login";
@@ -9,7 +9,7 @@ import PrimaryButton from "./components/PrimaryButton";
 // If your auth hook gives user + loading, use it:
 import { useAuthUser } from "../firebase/useAuthUser";
 
-// Firebase sign out (pick whichever you use in your project)
+// Firebase delete account (pick whichever you use in your project)
 import { getAuth, signOut } from "firebase/auth";
 import { addRecentOutput } from "./recentOutputs";
 
@@ -125,7 +125,10 @@ function ActionCard({ title, desc, pill, onClick, to, accent = "blue" }) {
 
 export default function Profile() {
 
+  const handleSignOutClick = () => setShowSignOutConfirm(true);
+
   const [searchParams] = useSearchParams();
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   
   const navigate = useNavigate();
   const { user, loading } = useAuthUser();
@@ -150,7 +153,8 @@ export default function Profile() {
   const safeEmail = user?.email || "";
   const photo = user?.photoURL || "";
 
-  const doSignOut = async () => {
+const confirmSignOut = async () => {
+    setShowSignOutConfirm(false);
     try {
       setSigningOut(true);
       const auth = getAuth();
@@ -158,9 +162,6 @@ export default function Profile() {
       navigate("/", { replace: true });
     } catch (e) {
       console.error(e);
-      alert("Sign out failed (check console).");
-    } finally {
-      setSigningOut(false);
     }
   };
 
@@ -197,7 +198,7 @@ export default function Profile() {
             </motion.h1>
 
             <motion.p className="sub" variants={fadeUp} custom={2} style={{ maxWidth: 820, marginBottom: 24 }}>
-              View your details, check previous outputs, or sign out.
+              View your details, check previous outputs, or delete account.
             </motion.p>
 
             {/* Header mini card */}
@@ -332,6 +333,7 @@ export default function Profile() {
               </div>
             </motion.div>
 
+
             {/* MENU / DETAILS */}
             {mode === "menu" ? (
               <motion.div variants={fadeUp} custom={4} style={{ display: "grid", gap: 14 }}>
@@ -353,11 +355,11 @@ export default function Profile() {
                   />
 
                   <ActionCard
-                    title="Sign Out"
+                    title="delete account"
                     pill={signingOut ? "Signing out…" : "Logout"}
                     accent="red"
-                    desc="Sign out from this browser and return to the landing page."
-                    onClick={doSignOut}
+                    desc="delete account from this browser and return to the landing page."
+                    onClick={handleSignOutClick}
                   />
                 </div>
               </motion.div>
@@ -447,7 +449,7 @@ export default function Profile() {
 
                   <button
                     className="pill"
-                    onClick={doSignOut}
+                    onClick={handleSignOutClick}
                     disabled={signingOut}
                     style={{
                       padding: "12px 14px",
@@ -461,7 +463,7 @@ export default function Profile() {
                       opacity: signingOut ? 0.75 : 1,
                     }}
                   >
-                    {signingOut ? "Signing out…" : "Sign out"}
+                    {signingOut ? "Signing out…" : "delete account"}
                   </button>
                 </div>
               </motion.div>
@@ -472,7 +474,37 @@ export default function Profile() {
             </footer>
           </motion.div>
         </main>
+
+                    {showSignOutConfirm && (
+  <div style={{
+    position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', 
+    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+  }}>
+    <div style={{
+      backgroundColor: '#000', color: '#fff', padding: '30px', 
+      borderRadius: '16px', border: '1px solid #333', textAlign: 'center', maxWidth: '350px'
+    }}>
+      <p style={{ marginBottom: '20px', fontWeight: 'bold' }}>Are you sure you want to delete account?</p>
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <button 
+          onClick={() => setShowSignOutConfirm(false)}
+          style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #444', background: 'transparent', color: '#fff', cursor: 'pointer' }}
+        >
+          Cancel
+        </button>
+        <button 
+          onClick={confirmSignOut}
+          style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: '#ff465a', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
+        >
+          delete account
+        </button>
       </div>
     </div>
+  </div>
+)}
+      </div>
+    </div>
+
+    
   );
 }

@@ -197,7 +197,7 @@ const doSignOut = async () => {
 
     <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
     <MenuBtn
-  label="Sign out"
+  label="Delete account"
   danger
   onClick={() => {
     setOpen(false);        // close dropdown
@@ -265,10 +265,10 @@ const doSignOut = async () => {
       >
         <div style={{ display: "grid", gap: 6 }}>
           <div style={{ fontWeight: 950, fontSize: 18, color: "rgba(255,255,255,0.92)" }}>
-            Sign out?
+            Delete Account?
           </div>
           <div style={{ fontSize: 13, color: "rgba(255,255,255,0.62)", lineHeight: 1.55 }}>
-            Are you sure you want to sign out? You can click <strong>Cancel</strong> to stay signed in.
+            Are you sure you want to remove your account? You can click <strong>Cancel</strong> to stay signed in.
           </div>
         </div>
 
@@ -311,7 +311,7 @@ const doSignOut = async () => {
             lineHeight: 1.6,
           }}
         >
-          You’ll be signed out from this browser session.
+          Your account will be permanently deleted from this browser session.
           <div style={{ marginTop: 8, color: "rgba(255,255,255,0.55)", fontSize: 12 }}>
             Signed in as <span style={{ color: "#6ad9ff", fontWeight: 900 }}>{user?.email || "—"}</span>
           </div>
@@ -367,7 +367,7 @@ const doSignOut = async () => {
             opacity: signingOut ? 0.7 : 1,
           }}
         >
-          {signingOut ? "Signing out…" : "Sign out"}
+          {signingOut ? "Deleting account…" : "Delete Account"}
         </button>
       </div>
     </div>
@@ -452,9 +452,10 @@ function MenuBtn({ label, onClick, danger }) {
         width: "100%",
         textAlign: "left",
         padding: "12px 14px",
-        background: danger ? "rgba(255,70,90,0.10)" : "transparent",
+        background: "transparent",
         border: "none",
-        color: "white",
+        // Only this line changes the color based on 'danger'
+        color: danger ? "#ff465a" : "white", 
         cursor: "pointer",
         fontWeight: 900,
         fontSize: 13,

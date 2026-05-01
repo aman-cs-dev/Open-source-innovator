@@ -1,6 +1,7 @@
 import csv
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from datetime import datetime, timezone
+import pandas as pd
 from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from model_csv import Output_Csv
@@ -19,6 +20,34 @@ app.add_middleware(
     allow_headers=["*"],
      expose_headers=["Content-Disposition"],  # so React can read filename header
 )
+
+@app.post("/read-csv")
+async def read_csv(file: UploadFile):
+    try:
+        # stores the binary format and converts in into df
+        content = file.read()
+        df = pd.read_csv(io.BytesIO(content))
+        
+        # removes all rows / spaces
+        df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+
+        # converts the df to a list of objects
+
+        final_data = df.to_dict(orient='list')    
+
+        # sends the data to frontend
+
+        return JSONResponse({
+
+            "status": "success",
+            "data": final_data
+        })    
+    
+    except Exception as e:
+        return({"status":"error", "reason": str(e)})
+
+
+
 
 
 @app.post("/create-csv")

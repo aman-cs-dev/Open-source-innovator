@@ -134,8 +134,18 @@ export default function Profile() {
 
   const localdata = localStorage.getItem("user");
   const localUser = localdata ? JSON.parse(localdata) : null;
-  const is_manual = localdata?.is_manual;
+  const is_Manual = localdata?.is_manual;
 
+  const user_id = useMemo(() =>  {if (!localUser?.is_manual) return null; 
+
+    const first = localUser.firstName?.charAt(0).toUpperCase() || "";
+    const last = localUser.lastName?.charAt(0).toUpperCase() || "";
+
+    const num = Math.floor(1000000 + Math.random() * 9000000);
+    const final_id = `${first}${last}${num}`;
+
+    return final_id;
+  }, [localUser]);
  
   
   const navigate = useNavigate();
@@ -403,7 +413,7 @@ const confirmSignOut = async () => {
                     >
                       <div style={{ fontWeight: 900, color: "rgba(255,255,255,0.85)" }}>UID</div>
                       <div style={{ color: "rgba(255,255,255,0.65)", textAlign: "right" }}>
-                        {user?.uid || "—"}
+                        {user_id || "—"}
                       </div>
                     </div>
 

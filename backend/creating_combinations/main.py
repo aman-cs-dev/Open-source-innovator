@@ -4,6 +4,8 @@ import csv
 import io
 import urllib
 import uuid
+import pdfplumber
+from docx import Document
 import itertools
 from urllib.request import urlopen
 import pandas as pd
@@ -41,31 +43,47 @@ app.add_middleware(
     expose_headers=["Content-Disposition"],  # so React can read filename header
 )
 
-# reads the csv file
-@app.post("/read-csv")
-async def read_csv(file: UploadFile):
+# reads the inputted file to find the inputs
+@app.post("/read-file")
+async def read_file(file: UploadFile):
     try:
         # stores the binary format and converts in into df
-        content = file.read()
-        df = pd.read_csv(io.BytesIO(content))
+        content = await file.read()
+        filename = file.filename.lower()
+        extracted_text = []
+
+        # for pdf
+        if(filename.endswith(".pdf")):
+            with pdfplumber.open(io.BytesIO(content)) as pdf:
+                for page in pdf.pages:
+                    extracted_text.append(page.extract_text())
+            final_input = {"items":  "\n".join(extracted_text).split("\n")}
         
-        # removes all rows / spaces
-        df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
 
-        # converts the df to a list of objects
+        # for word
+        elif(filename.endswith(".docx")):
+            doc = Document(io.BytesIO(content))
+            final_input = {"items": [para.text for para in doc.paragraphs if para.text.strip()]}
 
-        final_data = df.to_dict(orient='list')    
+        # for csv
+        elif (filename.endswith(".csv")):
+            df = pd.read_csv(io.BytesIO(content))
+            df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+            final_input = df.to_dict(orient='list')   
+
+        else:
+            return JSONResponse({"status": "invalid_path"})     
 
         # sends the data to the react frontend
         return JSONResponse({
 
             "status": "success",
-            "data": final_data
+            "data": final_input
         })    
     
     # Sends error 400 which means client side error
     except Exception as e:
-        return JSONResponse({"status":"error", "reason": str(e)}, status_code=400)
+        return JSONResponse({"status":"error", "reason": str(e)})
 
 
 

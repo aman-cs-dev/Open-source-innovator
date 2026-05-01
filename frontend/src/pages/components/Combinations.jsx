@@ -716,39 +716,98 @@ const generateCombos = async ({ size, weight_step }) => {
                 </div>
 
                 <div style={{ display: "grid", gap: 10 }}>
-                  <div style={{ display: "flex", gap: 10 }}>
-                    <input
-                      value={current}
-                      onChange={(e) => setCurrent(e.target.value)}
-                      onKeyDown={onKeyDown}
-                      placeholder="Type one item… then press Enter"
-                      className="pill"
-                      style={{
-                        flex: 1,
-                        padding: "12px",
-                        borderRadius: 12,
-                        background: "rgba(255,255,255,0.05)",
-                        color: "white",
-                      }}
-                    />
+  <div style={{ display: "flex", gap: 8, alignItems: 'center' }}>
+    <input
+      value={current}
+      onChange={(e) => setCurrent(e.target.value)}
+      onKeyDown={onKeyDown}
+      placeholder="Type item + Enter..."
+      className="pill"
+      style={{
+        flex: 1,
+        padding: "12px",
+        borderRadius: 12,
+        background: "rgba(255,255,255,0.05)",
+        color: "white",
+        border: "1px solid rgba(255,255,255,0.12)",
+      }}
+    />
 
-                    <button
-                      type="button"
-                      className="pill"
-                      onClick={addItem}
-                      style={{
-                        padding: "12px 14px",
-                        borderRadius: 12,
-                        background: "rgba(106,217,255,0.12)",
-                        border: "1px solid rgba(106,217,255,0.35)",
-                        color: "white",
-                        cursor: "pointer",
-                        fontWeight: 800,
-                      }}
-                    >
-                      Add
-                    </button>
-                  </div>
+    <button
+      type="button"
+      className="pill"
+      onClick={addItem}
+      style={{
+        padding: "12px 16px",
+        borderRadius: 12,
+        background: "rgba(106,217,255,0.12)",
+        border: "1px solid rgba(106,217,255,0.35)",
+        color: "white",
+        cursor: "pointer",
+        fontWeight: 800,
+      }}
+    >
+      Add
+    </button>
+
+    
+    <input 
+      type="file" 
+      id="file-upload" 
+      hidden 
+      accept=".csv,.pdf,.docx"
+      onChange={async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+           setOsfStatus("uploading");
+           setOsfMsg("Reading file...");
+           const res = await fetch("[https://generatingcombinations-production.up.railway.app/read-file](https://generatingcombinations-production.up.railway.app/read-file)", {
+              method: "POST",
+              body: formData
+           });
+           const result = await res.json();
+           if(result.status === "success") {
+              const newItems = result.data.items || Object.values(result.data).flat();
+              setItems(prev => [...prev, ...newItems]);
+              setOsfStatus("success");
+              setOsfMsg("File loaded");
+           }
+        } catch (err) {
+           setOsfStatus("error");
+           setOsfMsg("Read failed");
+        }
+      }}
+    />
+    
+    <button
+      type="button"
+      className="pill"
+      onClick={() => document.getElementById('file-upload').click()}
+      title="Upload CSV, PDF, or Word"
+      style={{
+        padding: "10px",
+        width: "44px",
+        height: "44px",
+        borderRadius: 12,
+        background: "rgba(255,255,255,0.06)",
+        border: "1px solid rgba(255,255,255,0.15)",
+        color: "white",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
+      }}
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+    </button>
+  </div>
 
                   <div
                     style={{

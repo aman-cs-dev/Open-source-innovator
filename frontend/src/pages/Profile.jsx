@@ -12,6 +12,7 @@ import { useAuthUser } from "../firebase/useAuthUser";
 // Firebase delete account (pick whichever you use in your project)
 import { getAuth, signOut } from "firebase/auth";
 import { addRecentOutput } from "./recentOutputs";
+import { useId } from "react";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -143,6 +144,10 @@ export default function Profile() {
 
     const num = Math.floor(1000000 + Math.random() * 9000000);
     const final_id = `${first}${last}${num}`;
+
+    localStorage.setItem("user", JSON.stringify(final_id));
+    const updated_user = {...localUser, useId: final_id};
+    localStorage.setItem("user", JSON.stringify(updated_user));
 
     return final_id;
   }, [localUser]);

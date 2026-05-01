@@ -21,6 +21,7 @@ app.add_middleware(
      expose_headers=["Content-Disposition"],  # so React can read filename header
 )
 
+# reads the csv file
 @app.post("/read-csv")
 async def read_csv(file: UploadFile):
     try:

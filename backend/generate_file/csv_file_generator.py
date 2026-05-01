@@ -36,8 +36,7 @@ async def read_csv(file: UploadFile):
 
         final_data = df.to_dict(orient='list')    
 
-        # sends the data to frontend
-
+        # sends the data to the react frontend
         return JSONResponse({
 
             "status": "success",

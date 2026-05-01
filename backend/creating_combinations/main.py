@@ -65,8 +65,8 @@ async def read_file(file: UploadFile):
             doc = Document(io.BytesIO(content))
             final_input = {"items": [para.text for para in doc.paragraphs if para.text.strip()]}
 
-        # for csv
-        elif (filename.endswith(".csv")):
+        # for csv or excel file
+        elif (filename.endswith(".csv")) or filename.endswith(".xls") or filename.endswith(".xlsx"):
             df = pd.read_csv(io.BytesIO(content))
             df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
             final_input = df.to_dict(orient='list')   

@@ -44,8 +44,9 @@ async def read_csv(file: UploadFile):
             "data": final_data
         })    
     
+    # Sends error 400 which means client side error
     except Exception as e:
-        return({"status":"error", "reason": str(e)})
+        return JSONResponse({"status":"error", "reason": str(e)}, status_code=400)
 
 
 

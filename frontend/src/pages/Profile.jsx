@@ -128,14 +128,27 @@ export default function Profile() {
 
   const handleSignOutClick = () => setShowSignOutConfirm(true);
 
-  // const manual_user = localStorage("user");
+    const { user, loading } = useAuthUser();
+
+  
 
   const [searchParams] = useSearchParams();
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
-  const localdata = localStorage.getItem("user");
-  const localUser = localdata ? JSON.parse(localdata) : null;
-  const is_Manual = localdata?.is_manual;
+  const [signingOut, setSigningOut] = useState(false);
+
+// Replace your localUser/is_manual lines with this:
+const localdata = localStorage.getItem("user");
+const localUser = useMemo(() => {
+  try {
+    // Only parse if it looks like a JSON object
+    return (localdata && localdata.startsWith('{')) ? JSON.parse(localdata) : null;
+  } catch (e) { return null; }
+}, [localdata]);
+
+// Use optional chaining (?.) for every property access
+const is_Manual = localUser?.is_manual || false; 
+const safeEmail = localUser?.is_manual ? localUser?.email : (user?.email || "No email available");
 
   const user_id = useMemo(() =>  {if (!localUser?.is_manual) return null; 
 
@@ -154,12 +167,9 @@ export default function Profile() {
  
   
   const navigate = useNavigate();
-  const { user, loading } = useAuthUser();
 
-  const [signingOut, setSigningOut] = useState(false);
 
-  const safeEmail = localUser.is_manual? localUser.email : (user?.email || "No email available");
-
+ 
   const photo = user?.photo;
 
   const initialMode = searchParams.get("view") === "details" ? "details" : "menu";

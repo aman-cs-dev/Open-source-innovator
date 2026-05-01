@@ -54,6 +54,9 @@ export default function Landing() {
 
   const handleGoogle = async () => {
     try {
+      
+      // removes any previous user first
+      localStorage.removeItem("user");
       const result = await signInWithGoogle();
       console.log("Google user:", result.user);
       navigate("/combinations"); // <-- redirect
@@ -65,6 +68,9 @@ export default function Landing() {
 
   const handleMicrosoft = async () => {
     try {
+
+      // removes any previous user first
+      localStorage.removeItem("user");
       const result = await signInWithMicrosoft();
       console.log("Microsoft user:", result.user);
       navigate("/combinations"); // <-- redirect

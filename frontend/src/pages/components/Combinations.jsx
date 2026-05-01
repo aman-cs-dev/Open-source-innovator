@@ -486,6 +486,14 @@ export default function Submit() {
   const [osfStatus, setOsfStatus] = useState("idle"); // idle | uploading | success | error
   const [osfMsg, setOsfMsg] = useState("");
 
+  const [popup, setPopup] = useState({ show: false, msg: "", type: "error" });
+
+// Helper to trigger a 5-second popup
+const triggerPopup = (msg, type = "error") => {
+  setPopup({ show: true, msg, type });
+  setTimeout(() => setPopup({ show: false, msg: "", type: "error" }), 5000);
+};
+
 
   const cleanedItems = useMemo(() => items.map((x) => x.trim()).filter(Boolean), [items]);
 
@@ -752,36 +760,58 @@ const generateCombos = async ({ size, weight_step }) => {
 
     
     <input 
-      type="file" 
+      type= "file" 
       id="file-upload" 
       hidden 
       accept=".csv,.pdf,.docx"
       onChange={async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        try {
-           setOsfStatus("uploading");
-           setOsfMsg("Reading file...");
-           const res = await fetch("[https://generatingcombinations-production.up.railway.app/read-file](https://generatingcombinations-production.up.railway.app/read-file)", {
-              method: "POST",
-              body: formData
-           });
-           const result = await res.json();
-           if(result.status === "success") {
-              const newItems = result.data.items || Object.values(result.data).flat();
-              setItems(prev => [...prev, ...newItems]);
-              setOsfStatus("success");
-              setOsfMsg("File loaded");
-           }
-        } catch (err) {
-           setOsfStatus("error");
-           setOsfMsg("Read failed");
-        }
-      }}
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // 1. Extension Validation
+  const allowed = [".csv", ".pdf", ".docx"];
+  const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
+
+  if (!allowed.includes(ext)) {
+    triggerPopup("Invalid file type. Please upload a CSV, PDF, or Word document.");
+    e.target.value = ""; // Reset input so same file can be picked again
+    return;
+  }
+
+  // 2. Prepare for Backend
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    setOsfStatus("uploading");
+    setOsfMsg("Reading file...");
+
+    const res = await fetch("https://generatingcombinations-production.up.railway.app/read-file", {
+      method: "POST",
+      body: formData
+    });
+
+    const result = await res.json();
+
+    // 3. Handle Backend Success/Error
+    if (result.status === "success") {
+      const newItems = result.data.items || Object.values(result.data).flat();
+      setItems(prev => [...prev, ...newItems]);
+      setOsfStatus("success");
+      setOsfMsg("File loaded");
+    } else {
+      throw new Error(result.reason || "Backend processing failed");
+    }
+
+  } catch (err) {
+    console.error(err);
+    setOsfStatus("error");
+    setOsfMsg("Read failed");
+    triggerPopup("Some unexpected error came. Please try again.");
+  } finally {
+    e.target.value = ""; // Clear input for next upload
+  }
+}}
     />
     
     <button

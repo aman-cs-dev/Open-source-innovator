@@ -25,7 +25,22 @@ export default function Navbar_Login() {
     navigate("/", { replace: true });
   };
 
-  const initials = (user?.displayName || user?.email || "U").slice(0, 1).toUpperCase();
+  // 1. Safely parse the manual user
+const localUser = (() => {
+  try {
+    const data = localStorage.getItem("user");
+    return (data && data.startsWith('{')) ? JSON.parse(data) : null;
+  } catch (e) { return null; }
+})();
+
+// 2. Determine the display name
+const safeName = localUser?.is_manual 
+  ? (localUser.firstName || "User") 
+  : (user?.displayName?.split(" ")[0] || "Account");
+
+const initials = (localUser?.firstName || user?.displayName || user?.email || "U")
+  .slice(0, 1).toUpperCase();
+
   const photo = user?.photoURL;
 
   return (
@@ -108,28 +123,33 @@ export default function Navbar_Login() {
         }}
       >
         <div
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 10,
-            overflow: "hidden",
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.10)",
-            display: "grid",
-            placeItems: "center",
-            fontWeight: 950,
-          }}
-        >
-          {photo ? (
-            <img
-              src={photo}
-              alt="avatar"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          ) : (
-            initials
-          )}
-        </div>
+  style={{
+    width: 28,
+    height: 28,
+    borderRadius: 10,
+    overflow: "hidden",
+    // Typical app fallback style: a soft gradient or solid neutral color
+    background: photo 
+      ? "transparent" 
+      : "linear-gradient(135deg, #6ad9ff 0%, #4a90e2 100%)",
+    border: "1px solid rgba(255,255,255,0.15)",
+    display: "grid",
+    placeItems: "center",
+    fontWeight: 950,
+    color: "white", // initials color
+    fontSize: 12,
+  }}
+>
+  {photo ? (
+    <img
+      src={photo}
+      alt="avatar"
+      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+    />
+  ) : (
+    initials
+  )}
+</div>
         <span style={{ opacity: 0.9 }}>Profile</span>
         <span style={{ opacity: 0.6 }}>▾</span>
       </button>
@@ -175,7 +195,7 @@ export default function Navbar_Login() {
                   color: "rgba(255,255,255,0.9)",
                 }}
               >
-                {user?.displayName || "Account"}
+                {user?.firstName || "Account"}
               </div>
 
               <div
@@ -188,7 +208,7 @@ export default function Navbar_Login() {
                   textUnderlineOffset: 3,
                 }}
               >
-                {user?.email || "—"}
+                {user?.firstName || "—"}
               </div>
             </button>
           </div>

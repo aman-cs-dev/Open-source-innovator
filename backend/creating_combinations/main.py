@@ -6,6 +6,7 @@ import urllib
 import uuid
 import itertools
 from urllib.request import urlopen
+import pandas as pd
 from fastapi import FastAPI, Request,UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse
 from datetime import datetime, timezone
@@ -39,6 +40,34 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["Content-Disposition"],  # so React can read filename header
 )
+
+# reads the csv file
+@app.post("/read-csv")
+async def read_csv(file: UploadFile):
+    try:
+        # stores the binary format and converts in into df
+        content = file.read()
+        df = pd.read_csv(io.BytesIO(content))
+        
+        # removes all rows / spaces
+        df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+
+        # converts the df to a list of objects
+
+        final_data = df.to_dict(orient='list')    
+
+        # sends the data to the react frontend
+        return JSONResponse({
+
+            "status": "success",
+            "data": final_data
+        })    
+    
+    # Sends error 400 which means client side error
+    except Exception as e:
+        return JSONResponse({"status":"error", "reason": str(e)}, status_code=400)
+
+
 
 # Post method to generate combinations out of the input given by frontend
 @app.post("/generate-combinations")

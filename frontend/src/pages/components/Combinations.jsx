@@ -848,9 +848,10 @@ const generateCombos = async ({ size, weight_step }) => {
       </svg>
     </button>
     
-    {/* 3. QUESTION MARK ICON (Now on the far right) */}
+    {/* 3. ? MARK ICON (Now on the far right) */}
   <button
     type="button"
+    title="File upload instructions"
     onClick={() => setHelpModalOpen(true)}
     style={{ 
       width: "36px", 

@@ -1054,7 +1054,7 @@ if (result.status === "success") {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       style={{ 
-        position: "relative", // Required for absolute positioning of the cross
+        position: "relative",
         background: "#0c0e14", 
         border: "1px solid rgba(106,217,255,0.3)", 
         padding: 32, 
@@ -1062,17 +1062,19 @@ if (result.status === "success") {
         maxWidth: 440, 
         width: "100%",
         textAlign: "center", 
-        boxShadow: "0 25px 80px rgba(0,0,0,0.8)" 
+        boxShadow: "0 25px 80px rgba(0,0,0,0.8)",
+        maxHeight: "90vh", // Prevents the modal from going off-screen
+        display: "flex",
+        flexDirection: "column"
       }}
     >
       {/* THE CROSS / CLOSE BUTTON */}
       <button
         onClick={() => setHelpModalOpen(false)}
-        aria-label="Close instructions"
         style={{
           position: "absolute",
-          top: 20, // Adjusted based on padding
-          right: 20, // Adjusted based on padding
+          top: 20,
+          right: 20,
           width: 32,
           height: 32,
           borderRadius: "50%",
@@ -1084,46 +1086,62 @@ if (result.status === "success") {
           display: "grid",
           placeItems: "center",
           lineHeight: 1,
-          transition: "all 0.2s ease",
-          padding: 0,
-          boxSizing: "border-box",
-        }}
-        // Add a subtle hover effect (optional but recommended)
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = "rgba(255,70,90,0.15)";
-          e.currentTarget.style.color = "#ff465a";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-          e.currentTarget.style.color = "rgba(255,255,255,0.6)";
+          zIndex: 10 // Ensure it stays above content
         }}
       >
-        <span style={{ transform: 'translateY(-1px)' }}>×</span>
+        <span>×</span>
       </button>
 
       <div style={{ fontSize: 44, marginBottom: 16 }}>📂</div>
       <h2 style={{ color: "#fff", fontSize: 22, fontWeight: 900, marginBottom: 12 }}>
         File Upload Instructions
       </h2>
-      <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>
-        To ensure your materials are imported correctly, please format your files as follows:
+      <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, lineHeight: 1.6, marginBottom: 20 }}>
+        To ensure your materials are imported correctly, please format your files as a <strong>simple list</strong>:
       </p>
 
-      <div style={{ textAlign: "left", display: "grid", gap: 12, marginBottom: 28 }}>
+      {/* SCROLLABLE CONTAINER START */}
+      <div style={{ 
+        textAlign: "left", 
+        display: "grid", 
+        gap: 12, 
+        marginBottom: 24,
+        overflowY: "auto",      // Enables vertical scrolling
+        maxHeight: "320px",     // Limits the height of the instruction area
+        paddingRight: "8px",    // Space for the scrollbar
+        paddingBottom: "4px"
+      }}
+      className="custom-scrollbar" // You can style the scrollbar in your CSS
+      >
+        {/* SECTION 1: EXTENSIONS */}
         <div style={{ background: "rgba(255,255,255,0.03)", padding: 16, borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)" }}>
-          <p style={{ color: "#6ad9ff", fontWeight: 900, fontSize: 13, marginBottom: 4 }}>✅ CSV FILES</p>
-          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 13 }}>
-            Items must be in the <strong>first column</strong>. Do not include headers or titles.
+          <p style={{ color: "#6ad9ff", fontWeight: 900, fontSize: 13, marginBottom: 8 }}>✅ ONLY ACCEPTED FILE EXTENSIONS</p>
+          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 13, lineHeight: 1.5 }}>
+            <strong>CSV</strong>, <strong>DOCX</strong> or <strong>PDF</strong>
           </p>
         </div>
 
+        {/* SECTION 2: FORMAT */}
         <div style={{ background: "rgba(255,255,255,0.03)", padding: 16, borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)" }}>
-          <p style={{ color: "#6ad9ff", fontWeight: 900, fontSize: 13, marginBottom: 4 }}>✅ PDF & WORD</p>
-          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 13 }}>
-            Ensure items are clearly separated by <strong>commas</strong> or <strong>new lines</strong>.
+          <p style={{ color: "#6ad9ff", fontWeight: 900, fontSize: 13, marginBottom: 8 }}>✅ REQUIRED FORMAT</p>
+          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 13, lineHeight: 1.5 }}>
+            Each material or concept must be on a <strong>new line</strong>. Do not include headers, titles, or multiple items per line.
           </p>
         </div>
+
+        {/* SECTION 3: EXAMPLE */}
+        <div style={{ background: "rgba(255,255,255,0.03)", padding: 16, borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)" }}>
+          <p style={{ color: "#6ad9ff", fontWeight: 900, fontSize: 13, marginBottom: 8 }}>📄 EXAMPLE</p>
+          <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, fontFamily: "monospace", paddingLeft: 8 }}>
+            Sulfuric Acid <br/>
+            Sodium Chloride <br/>
+            Ethanol <br/>
+            Ammonia <br/>
+            Hydrochloric Acid 
+          </div>
+        </div>
       </div>
+      {/* SCROLLABLE CONTAINER END */}
 
       <button 
         onClick={() => setHelpModalOpen(false)} 
@@ -1137,7 +1155,7 @@ if (result.status === "success") {
           fontWeight: "950", 
           fontSize: 15,
           cursor: "pointer",
-          boxShadow: "0 4px 15px rgba(106,217,255,0.3)"
+          flexShrink: 0 // Prevents the button from being squashed
         }}
       >
         Got it, thanks!

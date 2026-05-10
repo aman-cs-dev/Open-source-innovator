@@ -469,6 +469,19 @@ function GenerateModal({
   );
 }
 
+const ThreeDotLoader = () => (
+  <div style={{ display: "flex", gap: "4px", alignItems: "center", justifyContent: "center" }}>
+    {[0, 1, 2].map((i) => (
+      <motion.div
+        key={i}
+        animate={{ opacity: [0.3, 1, 0.3] }}
+        transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+        style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}
+      />
+    ))}
+  </div>
+);
+
 
 export default function Submit() {
 
@@ -482,6 +495,7 @@ export default function Submit() {
   const [generatedAt, setGeneratedAt] = useState("");  
   const [modalOpen, setModalOpen] = useState(false);
   const [generating, setGenerating] = useState(false);  
+  const [isReadingFile, setIsReadingFile] = useState(false);
   const [current, setCurrent] = useState("");
   const [items, setItems] = useState([]);
   const [osfStatus, setOsfStatus] = useState("idle"); // idle | uploading | success | error
@@ -776,19 +790,7 @@ const generateCombos = async ({ size, weight_step }) => {
   const allowed = [".csv", ".pdf", ".docx"];
   const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
 
-  // Inside your upload onChange function
-if (result.status === "success") {
-  const newItems = result.data.items || [];
-  
-  if (newItems.length === 0) {
-    // Automatically open the instructions if the file was empty/unreadable
-    setHelpModalOpen(true);
-    triggerPopup("No materials found. Please check the formatting rules.", "warning");
-  } else {
-    setItems(prev => [...prev, ...newItems]);
-    setOsfMsg("File loaded");
-  }
-}
+
 
   if (!allowed.includes(ext)) {
     triggerPopup("Invalid file type. Please upload a CSV, PDF, or Word document.");
@@ -797,10 +799,11 @@ if (result.status === "success") {
   }
 
   // 2. Prepare for Backend
-  const formData = new FormData();
+const formData = new FormData();
   formData.append('file', file);
 
   try {
+    setIsReadingFile(true); // START LOADING
     setOsfStatus("uploading");
     setOsfMsg("Reading file...");
 
@@ -811,7 +814,6 @@ if (result.status === "success") {
 
     const result = await res.json();
 
-    // 3. Handle Backend Success/Error
     if (result.status === "success") {
       const newItems = result.data.items || Object.values(result.data).flat();
       setItems(prev => [...prev, ...newItems]);
@@ -827,7 +829,8 @@ if (result.status === "success") {
     setOsfMsg("Read failed");
     triggerPopup("Some unexpected error came. Please try again.");
   } finally {
-    e.target.value = ""; // Clear input for next upload
+    setIsReadingFile(false); // STOP LOADING
+    e.target.value = ""; 
   }
 }}
     />
@@ -835,35 +838,34 @@ if (result.status === "success") {
     
     
     <button
-      type="button"
-      className="pill"
-      onClick={() => document.getElementById('file-upload').click()}
-      title="Upload CSV, PDF, or Word"
-      style={{
-        padding: "10px",
-        width: "44px",
-        height: "44px",
-        borderRadius: 12,
-        background: "rgba(255,255,255,0.06)",
-        border: "1px solid rgba(255,255,255,0.15)",
-        color: "white",
-        cursor: "pointer",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center"
-      }}
-
-      
-
-      
-    >
-      
-
-      
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-      </svg>
-    </button>
+  type="button"
+  className="pill"
+  onClick={() => document.getElementById('file-upload').click()}
+  disabled={isReadingFile} // Disable while loading
+  title="Upload CSV, PDF, or Word"
+  style={{
+    padding: "10px",
+    width: "44px",
+    height: "44px",
+    borderRadius: 12,
+    background: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.15)",
+    color: "white",
+    cursor: isReadingFile ? "not-allowed" : "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0
+  }}
+>
+  {isReadingFile ? (
+    <ThreeDotLoader /> // SHOW ANIMATED DOTS
+  ) : (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+    </svg>
+  )}
+</button>
     
     {/* 3. ? MARK ICON (Now on the far right) */}
   <button

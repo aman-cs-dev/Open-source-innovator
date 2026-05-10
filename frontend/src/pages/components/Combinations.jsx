@@ -476,6 +476,7 @@ export default function Submit() {
 
 
   const [comboResults, setComboResults] = useState([]);
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [osfUrl, setOsfUrl] = useState("https://osf.io/rcusy/files/osfstorage");
   const [lastK, setLastK] = useState(0);
   const [generatedAt, setGeneratedAt] = useState("");  
@@ -769,9 +770,25 @@ const generateCombos = async ({ size, weight_step }) => {
   const file = e.target.files[0];
   if (!file) return;
 
+  
+
   // 1. Extension Validation
   const allowed = [".csv", ".pdf", ".docx"];
   const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
+
+  // Inside your upload onChange function
+if (result.status === "success") {
+  const newItems = result.data.items || [];
+  
+  if (newItems.length === 0) {
+    // Automatically open the instructions if the file was empty/unreadable
+    setHelpModalOpen(true);
+    triggerPopup("No materials found. Please check the formatting rules.", "warning");
+  } else {
+    setItems(prev => [...prev, ...newItems]);
+    setOsfMsg("File loaded");
+  }
+}
 
   if (!allowed.includes(ext)) {
     triggerPopup("Invalid file type. Please upload a CSV, PDF, or Word document.");
@@ -1020,6 +1037,77 @@ const generateCombos = async ({ size, weight_step }) => {
           </footer>
         </main>
       </div>
+
+      {/* HIGHLY VISIBLE INSTRUCTIONS POPUP */}
+{helpModalOpen && (
+  <div style={{ 
+    position: "fixed", 
+    inset: 0, 
+    zIndex: 10000, 
+    background: "rgba(0,0,0,0.85)", 
+    backdropFilter: "blur(12px)", 
+    display: "grid", 
+    placeItems: "center", 
+    padding: 20 
+  }}>
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      style={{ 
+        background: "#0c0e14", 
+        border: "1px solid rgba(106,217,255,0.3)", 
+        padding: 32, 
+        borderRadius: 28, 
+        maxWidth: 440, 
+        width: "100%",
+        textAlign: "center", 
+        boxShadow: "0 25px 80px rgba(0,0,0,0.8)" 
+      }}
+    >
+      <div style={{ fontSize: 44, marginBottom: 16 }}>📂</div>
+      <h2 style={{ color: "#fff", fontSize: 22, fontWeight: 900, marginBottom: 12 }}>
+        File Upload Instructions
+      </h2>
+      <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>
+        To ensure your materials are imported correctly, please format your files as follows:
+      </p>
+
+      <div style={{ textAlign: "left", display: "grid", gap: 12, marginBottom: 28 }}>
+        <div style={{ background: "rgba(255,255,255,0.03)", padding: 16, borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)" }}>
+          <p style={{ color: "#6ad9ff", fontWeight: 900, fontSize: 13, marginBottom: 4 }}>✅ CSV FILES</p>
+          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 13 }}>
+            Items must be in the <strong>first column</strong>. Do not include headers or titles.
+          </p>
+        </div>
+
+        <div style={{ background: "rgba(255,255,255,0.03)", padding: 16, borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)" }}>
+          <p style={{ color: "#6ad9ff", fontWeight: 900, fontSize: 13, marginBottom: 4 }}>✅ PDF & WORD</p>
+          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 13 }}>
+            Ensure items are clearly separated by <strong>commas</strong> or <strong>new lines</strong>.
+          </p>
+        </div>
+      </div>
+
+      <button 
+        onClick={() => setHelpModalOpen(false)} 
+        style={{ 
+          width: "100%", 
+          padding: "16px", 
+          background: "#6ad9ff", 
+          color: "#000", 
+          border: "none", 
+          borderRadius: 14, 
+          fontWeight: "950", 
+          fontSize: 15,
+          cursor: "pointer",
+          boxShadow: "0 4px 15px rgba(106,217,255,0.3)"
+        }}
+      >
+        Got it, thanks!
+      </button>
+    </motion.div>
+  </div>
+)}
     </div>
 
     

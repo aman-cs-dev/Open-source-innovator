@@ -814,6 +814,8 @@ const generateCombos = async ({ size, weight_step }) => {
   }
 }}
     />
+
+    
     
     <button
       type="button"
@@ -833,12 +835,45 @@ const generateCombos = async ({ size, weight_step }) => {
         alignItems: "center",
         justifyContent: "center"
       }}
+
+      
+
+      
     >
+      
+
+      
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
       </svg>
     </button>
-  </div>
+    
+    {/* 3. QUESTION MARK ICON (Now on the far right) */}
+  <button
+    type="button"
+    onClick={() => setHelpModalOpen(true)}
+    style={{ 
+      width: "36px", 
+      height: "36px", 
+      borderRadius: "50%", 
+      background: "rgba(255,255,255,0.05)", 
+      border: "1px solid rgba(255,255,255,0.15)", 
+      color: "#6ad9ff", 
+      cursor: "pointer", 
+      display: "grid", 
+      placeItems: "center", 
+      fontWeight: "900", 
+      flexShrink: 0 
+    }}
+  >
+    ?
+  </button>
+</div>
+  
+
+  
+
+  
 
                   <div
                     style={{

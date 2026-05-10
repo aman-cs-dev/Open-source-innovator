@@ -1038,7 +1038,7 @@ if (result.status === "success") {
         </main>
       </div>
 
-      {/* HIGHLY VISIBLE INSTRUCTIONS POPUP */}
+{/* HIGHLY VISIBLE INSTRUCTIONS POPUP */}
 {helpModalOpen && (
   <div style={{ 
     position: "fixed", 
@@ -1054,6 +1054,7 @@ if (result.status === "success") {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       style={{ 
+        position: "relative", // Required for absolute positioning of the cross
         background: "#0c0e14", 
         border: "1px solid rgba(106,217,255,0.3)", 
         padding: 32, 
@@ -1064,6 +1065,42 @@ if (result.status === "success") {
         boxShadow: "0 25px 80px rgba(0,0,0,0.8)" 
       }}
     >
+      {/* THE CROSS / CLOSE BUTTON */}
+      <button
+        onClick={() => setHelpModalOpen(false)}
+        aria-label="Close instructions"
+        style={{
+          position: "absolute",
+          top: 20, // Adjusted based on padding
+          right: 20, // Adjusted based on padding
+          width: 32,
+          height: 32,
+          borderRadius: "50%",
+          background: "rgba(255,255,255,0.05)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          color: "rgba(255,255,255,0.6)",
+          fontSize: 22,
+          cursor: "pointer",
+          display: "grid",
+          placeItems: "center",
+          lineHeight: 1,
+          transition: "all 0.2s ease",
+          padding: 0,
+          boxSizing: "border-box",
+        }}
+        // Add a subtle hover effect (optional but recommended)
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "rgba(255,70,90,0.15)";
+          e.currentTarget.style.color = "#ff465a";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+          e.currentTarget.style.color = "rgba(255,255,255,0.6)";
+        }}
+      >
+        <span style={{ transform: 'translateY(-1px)' }}>×</span>
+      </button>
+
       <div style={{ fontSize: 44, marginBottom: 16 }}>📂</div>
       <h2 style={{ color: "#fff", fontSize: 22, fontWeight: 900, marginBottom: 12 }}>
         File Upload Instructions

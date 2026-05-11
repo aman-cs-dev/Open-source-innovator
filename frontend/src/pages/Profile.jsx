@@ -344,7 +344,7 @@ const confirmSignOut = async () => {
       fontWeight: 800,
     }}
   >
-    {safeEmail || "No email available"}
+    {localUser?.firstName || user?.displayName?.split(" ")[0] || "Innovator"}
   </div>
 </div>
 

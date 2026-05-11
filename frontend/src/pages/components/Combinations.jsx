@@ -814,14 +814,32 @@ const formData = new FormData();
 
     const result = await res.json();
 
+    
+
     if (result.status === "success") {
       const newItems = result.data.items || Object.values(result.data).flat();
+
+      // NEW USER-FRIENDLY CHECK:
+  if (newItems.length === 0) {
+    setIsReadingFile(false);
+    setHelpModalOpen(true); // <--- THIS TRIGGERS THE POPUP
+    triggerPopup("No materials found! Please follow the list format.", "error");
+    setOsfStatus("error");
+    setOsfMsg("Empty file");
+  } else {
+    setItems(prev => [...prev, ...newItems]);
+    setOsfStatus("success");
+    setOsfMsg("File loaded");
+  }
+
       setItems(prev => [...prev, ...newItems]);
       setOsfStatus("success");
       setOsfMsg("File loaded");
     } else {
       throw new Error(result.reason || "Backend processing failed");
     }
+
+
 
   } catch (err) {
     console.error(err);

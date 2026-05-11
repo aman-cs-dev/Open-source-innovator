@@ -838,6 +838,17 @@ const formData = new FormData();
     setIsReadingFile(false);
     return; // Stop here so junk isn't added to the list
   }
+
+  const isValidList = newItems.length > 0 && newItems.every(item => item.length < 120);
+
+  if (!isValidList) {
+    // TRIGGER POPUP if empty or if data looks like junk/paragraphs
+    setHelpModalOpen(true); 
+    triggerPopup("Invalid formatting! Please see instructions.", "error");
+    setIsReadingFile(false);
+    setOsfStatus("error");
+    return;
+  }
   
   else {
     setItems(prev => [...prev, ...newItems]);

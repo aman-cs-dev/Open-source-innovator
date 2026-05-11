@@ -826,7 +826,20 @@ const formData = new FormData();
     triggerPopup("No materials found! Please follow the list format.", "error");
     setOsfStatus("error");
     setOsfMsg("Empty file");
-  } else {
+
+  } 
+  const looksLikeParagraph = newItems.some(item => 
+    item.split(' ').length > 12 || item.length > 120
+  );
+
+  if (looksLikeParagraph) {
+    setHelpModalOpen(true); // Open instructions
+    triggerPopup("Formatting error: Items look like paragraphs.", "error");
+    setIsReadingFile(false);
+    return; // Stop here so junk isn't added to the list
+  }
+  
+  else {
     setItems(prev => [...prev, ...newItems]);
     setOsfStatus("success");
     setOsfMsg("File loaded");

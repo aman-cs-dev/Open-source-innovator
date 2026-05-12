@@ -1,0 +1,4 @@
+Material,Is_Hazardous,Last_Updated,System_ID
+Steel,False,2026-05-12,NULL
+Aluminum,False,2026-05-11,VOID
+Titanium,True,2026-05-12,ERROR

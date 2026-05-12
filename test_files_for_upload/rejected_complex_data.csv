@@ -1,0 +1,6 @@
+Material_ID,Material_Name,Supplier,Unit_Price,Stock_Level,Comments
+1001,Carbon Nanotubes,Advanced Materials Inc,$250,In Stock,High thermal conductivity; ideal for aerospace applications.
+1002,Boron Carbide,Global Tech,$180,Low,Extreme hardness; used in armored shielding.
+1003,Silicon Nitride,NanoSpec,$320,Out of Stock,High temperature resistance.
+1004,Tungsten Alloy,Alloy Dynamics,$450,In Stock,Dense material for radiation shielding.
+1005,Lithium Cobalt Oxide,EnergySource,$210,High,Standard cathode material for Li-ion batteries.

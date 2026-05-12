@@ -1,0 +1,5 @@
+Sample_ID,Material,Temp_C,Success_Rate,Researcher
+S001,ABS,25.5,98%,Dr. Pearce
+S002,Graphene,30.2,85%,Aman
+S003,Silica,22.1,100%,Wolfe
+S004,Nylon,45.0,92%,Apurva

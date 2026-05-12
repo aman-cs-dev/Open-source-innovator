@@ -813,6 +813,7 @@ const generateCombos = async ({ size, weight_step }) => {
       // Extract items and filter out empty strings immediately
       const extracted = result.data.items || Object.values(result.data).flat();
       const newItems = extracted.map(i => String(i).trim()).filter(Boolean);
+      const columns = Object.keys(result.data);
 
       // --- VALIDATION CHECKS ---
       
@@ -825,6 +826,15 @@ const generateCombos = async ({ size, weight_step }) => {
         setIsReadingFile(false);
         return;
       }
+
+      if (columns.length > 1) {
+    setHelpModalOpen(true); // Automatically show instructions
+    triggerPopup("Rejected: Multiple columns detected. Please upload a single-column list.", "error");
+    setIsReadingFile(false);
+    setOsfStatus("error");
+    setOsfMsg("Invalid format");
+    return; // Exit immediately
+  }
 
       // Check 2: Paragraph Detection
       const hasParagraphs = newItems.some(item => item.split(' ').length > 12 || item.length > 150);

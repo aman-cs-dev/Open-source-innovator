@@ -1,7 +1,7 @@
 // src/pages/HowToUse.jsx
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import Navbar from "./components/Navbar";
+import Navbar from "./Landing_Navbar";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },

@@ -98,9 +98,10 @@ const initials = (localUser?.firstName || user?.displayName || user?.email || "U
 
         {/* RIGHT LINKS */}
 <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-  <NavItem to="/about">About</NavItem>
-  <NavItem to="/how">How to use</NavItem>
-  <NavItem to="/output">Privacy Policy</NavItem>
+  <NavItem to= "/combinations"> Combinations</NavItem>  
+  <NavItem to="/landing_about">About</NavItem>
+  <NavItem to="/landing_how">How to use</NavItem>
+  <NavItem to="/landing_privacy">Privacy Policy</NavItem>
 
   {/* PROFILE DROPDOWN (only when signed in) */}
   {user && (

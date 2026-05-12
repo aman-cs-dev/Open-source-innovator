@@ -784,26 +784,21 @@ const generateCombos = async ({ size, weight_step }) => {
   const file = e.target.files[0];
   if (!file) return;
 
-  
-
   // 1. Extension Validation
   const allowed = [".csv", ".pdf", ".docx"];
   const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
 
-
-
   if (!allowed.includes(ext)) {
     triggerPopup("Invalid file type. Please upload a CSV, PDF, or Word document.");
-    e.target.value = ""; // Reset input so same file can be picked again
+    e.target.value = "";
     return;
   }
 
-  // 2. Prepare for Backend
-const formData = new FormData();
+  const formData = new FormData();
   formData.append('file', file);
 
   try {
-    setIsReadingFile(true); // START LOADING
+    setIsReadingFile(true);
     setOsfStatus("uploading");
     setOsfMsg("Reading file...");
 
@@ -814,66 +809,54 @@ const formData = new FormData();
 
     const result = await res.json();
 
-    
-
     if (result.status === "success") {
-      const newItems = result.data.items || Object.values(result.data).flat();
+      // Extract items and filter out empty strings immediately
+      const extracted = result.data.items || Object.values(result.data).flat();
+      const newItems = extracted.map(i => String(i).trim()).filter(Boolean);
 
-      // NEW USER-FRIENDLY CHECK:
-  if (newItems.length === 0) {
-    setIsReadingFile(false);
-    setHelpModalOpen(true); // <--- THIS TRIGGERS THE POPUP
-    triggerPopup("No materials found! Please follow the list format.", "error");
-    setOsfStatus("error");
-    setOsfMsg("Empty file");
+      // --- VALIDATION CHECKS ---
+      
+      // Check 1: Empty file
+      if (newItems.length === 0) {
+        setHelpModalOpen(true);
+        triggerPopup("The file is empty or unreadable.", "error");
+        setOsfStatus("error");
+        setOsfMsg("Empty file");
+        setIsReadingFile(false);
+        return;
+      }
 
-  } 
-  const looksLikeParagraph = newItems.some(item => 
-    item.split(' ').length > 12 || item.length > 120
-  );
+      // Check 2: Paragraph Detection
+      const hasParagraphs = newItems.some(item => item.split(' ').length > 12 || item.length > 150);
+      
+      if (hasParagraphs) {
+        setHelpModalOpen(true);
+        triggerPopup("Formatting error: Items look like paragraphs.", "error");
+        setOsfStatus("error");
+        setOsfMsg("Invalid format");
+        setIsReadingFile(false);
+        return;
+      }
 
-  if (looksLikeParagraph) {
-    setHelpModalOpen(true); // Open instructions
-    triggerPopup("Formatting error: Items look like paragraphs.", "error");
-    setIsReadingFile(false);
-    return; // Stop here so junk isn't added to the list
-  }
-
-  const isValidList = newItems.length > 0 && newItems.every(item => item.length < 120);
-
-  if (!isValidList) {
-    // TRIGGER POPUP if empty or if data looks like junk/paragraphs
-    setHelpModalOpen(true); 
-    triggerPopup("Invalid formatting! Please see instructions.", "error");
-    setIsReadingFile(false);
-    setOsfStatus("error");
-    return;
-  }
-  
-  else {
-    setItems(prev => [...prev, ...newItems]);
-    setOsfStatus("success");
-    setOsfMsg("File loaded");
-  }
-
+      // --- SUCCESS: Update the list ---
       setItems(prev => [...prev, ...newItems]);
       setOsfStatus("success");
       setOsfMsg("File loaded");
+      
     } else {
-      throw new Error(result.reason || "Backend processing failed");
+      throw new Error(result.reason || "Backend failed");
     }
-
-
-
   } catch (err) {
-    console.error(err);
+    console.error("Upload error:", err);
     setOsfStatus("error");
     setOsfMsg("Read failed");
-    triggerPopup("Some unexpected error came. Please try again.");
+    setHelpModalOpen(true); // Show instructions on any crash
+    triggerPopup("Could not read file. Please follow the list format.");
   } finally {
-    setIsReadingFile(false); // STOP LOADING
-    e.target.value = ""; 
+    setIsReadingFile(false);
+    e.target.value = ""; // Reset input
   }
+
 }}
     />
 

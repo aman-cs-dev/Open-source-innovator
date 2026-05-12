@@ -5,7 +5,7 @@ import { useAuthUser } from "../firebase/useAuthUser"; // adjust path to where y
 import { motion, time } from "framer-motion";
 
 
-import Navbar from "./components/Navbar";
+import Navbar from "./components/Landing_Navbar.jsx";
 import PrimaryButton from "./components/PrimaryButton";
 
 import { signInWithGoogle, signInWithMicrosoft } from "../firebase/firebase.jsx";

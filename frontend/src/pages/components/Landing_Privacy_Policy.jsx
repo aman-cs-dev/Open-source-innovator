@@ -1,6 +1,6 @@
 // src/pages/PrivacyPolicy.jsx
 import { motion } from "framer-motion";
-import Navbar from "./components/Navbar_Login";
+import Navbar from "./components/Navbar";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },

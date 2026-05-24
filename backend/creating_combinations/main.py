@@ -47,44 +47,56 @@ app.add_middleware(
 @app.post("/read-file")
 async def read_file(file: UploadFile):
     try:
-        # stores the binary format and converts in into df
         content = await file.read()
         filename = file.filename.lower()
-        extracted_text = []
 
-        # for pdf
-        if(filename.endswith(".pdf")):
+        # Reject empty file immediately
+        if not content or not content.strip():
+            return JSONResponse({"status": "error", "reason": "File is empty."})
+
+        final_items = []
+
+        # PDF
+        if filename.endswith(".pdf"):
             with pdfplumber.open(io.BytesIO(content)) as pdf:
                 for page in pdf.pages:
-                    extracted_text.append(page.extract_text())
-            final_input = {"items":  "\n".join(extracted_text).split("\n")}
-        
+                    text = page.extract_text()
+                    if text:
+                        for line in text.split("\n"):
+                            line = line.strip()
+                            if line:
+                                final_items.append(line)
 
-        # for word
-        elif(filename.endswith(".docx")):
+        # Word
+        elif filename.endswith(".docx"):
             doc = Document(io.BytesIO(content))
-            final_input = {"items": [para.text for para in doc.paragraphs if para.text.strip()]}
+            for para in doc.paragraphs:
+                line = para.text.strip()
+                if line:
+                    final_items.append(line)
 
-        # for csv or excel file
-        elif (filename.endswith(".csv")) or filename.endswith(".xls") or filename.endswith(".xlsx"):
+        # CSV / Excel
+        elif filename.endswith(".csv") or filename.endswith(".xls") or filename.endswith(".xlsx"):
             df = pd.read_csv(io.BytesIO(content), header=None)
             df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
-            final_input = df.to_dict(orient='list')   
+
+            if df.shape[1] > 1:
+                return JSONResponse({"status": "error", "reason": "Multiple columns detected. Upload a single-column list."})
+
+            final_items = df[0].dropna().astype(str).tolist()
+            final_items = [i for i in final_items if i.strip()]
 
         else:
-            return JSONResponse({"status": "invalid_path"})     
+            return JSONResponse({"status": "error", "reason": "Unsupported file type. Please upload a CSV, PDF, or DOCX."})
 
-        # sends the data to the react frontend
-        return JSONResponse({
+        # Final empty check (valid file but no extractable content)
+        if not final_items:
+            return JSONResponse({"status": "error", "reason": "File is empty or no readable content found."})
 
-            "status": "success",
-            "data": final_input
-        })    
-    
-    # Sends error 400 which means client side error
+        return JSONResponse({"status": "success", "data": {"items": final_items}})
+
     except Exception as e:
-        return JSONResponse({"status":"error", "reason": str(e)})
-
+        return JSONResponse({"status": "error", "reason": str(e)})
 
 
 # Post method to generate combinations out of the input given by frontend

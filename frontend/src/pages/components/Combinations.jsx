@@ -780,11 +780,10 @@ const generateCombos = async ({ size, weight_step }) => {
       id="file-upload" 
       hidden 
       accept=".csv,.pdf,.docx"
-      onChange={async (e) => {
+     onChange={async (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
-  // 1. Extension Validation
   const allowed = [".csv", ".pdf", ".docx"];
   const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
 
@@ -809,64 +808,47 @@ const generateCombos = async ({ size, weight_step }) => {
 
     const result = await res.json();
 
-    if (result.status === "success") {
-      // Extract items and filter out empty strings immediately
-      const extracted = result.data.items || Object.values(result.data).flat();
-      const newItems = extracted.map(i => String(i).trim()).filter(Boolean);
-      const columns = Object.keys(result.data);
-
-      // --- VALIDATION CHECKS ---
-      
-      // Check 1: Empty file
-      if (newItems.length === 0) {
-        setHelpModalOpen(true);
-        triggerPopup("The file is empty or unreadable.", "error");
-        setOsfStatus("error");
-        setOsfMsg("Empty file");
-        setIsReadingFile(false);
-        return;
-      }
-
-      if (columns.length > 1) {
-    setHelpModalOpen(true); // Automatically show instructions
-    triggerPopup("Rejected: Multiple columns detected. Please upload a single-column list.", "error");
-    setIsReadingFile(false);
-    setOsfStatus("error");
-    setOsfMsg("Invalid format");
-    return; // Exit immediately
-  }
-
-      // Check 2: Paragraph Detection
-      const hasParagraphs = newItems.some(item => item.split(' ').length > 12 || item.length > 150);
-      
-      if (hasParagraphs) {
-        setHelpModalOpen(true);
-        triggerPopup("Formatting error: Items look like paragraphs.", "error");
-        setOsfStatus("error");
-        setOsfMsg("Invalid format");
-        setIsReadingFile(false);
-        return;
-      }
-
-      // --- SUCCESS: Update the list ---
-      setItems(prev => [...prev, ...newItems]);
-      setOsfStatus("success");
-      setOsfMsg("File loaded");
-      
-    } else {
+    if (result.status !== "success") {
       throw new Error(result.reason || "Backend failed");
     }
+
+    // Always trust result.data.items — backend now always returns this shape
+    const newItems = (result.data.items || [])
+      .map(i => String(i).trim())
+      .filter(Boolean);
+
+    if (newItems.length === 0) {
+      triggerPopup("The file is empty or unreadable.", "error");
+      setOsfStatus("error");
+      setOsfMsg("Empty file");
+      return;
+    }
+
+    const hasParagraphs = newItems.some(
+      item => item.split(' ').length > 12 || item.length > 150
+    );
+    if (hasParagraphs) {
+      setHelpModalOpen(true);
+      triggerPopup("Formatting error: Items look like paragraphs.", "error");
+      setOsfStatus("error");
+      setOsfMsg("Invalid format");
+      return;
+    }
+
+    setItems(prev => [...prev, ...newItems]);
+    setOsfStatus("success");
+    setOsfMsg("File loaded");
+
   } catch (err) {
     console.error("Upload error:", err);
     setOsfStatus("error");
     setOsfMsg("Read failed");
-    setHelpModalOpen(true); // Show instructions on any crash
+    setHelpModalOpen(true);
     triggerPopup("Could not read file. Please follow the list format.");
   } finally {
     setIsReadingFile(false);
-    e.target.value = ""; // Reset input
+    e.target.value = "";
   }
-
 }}
     />
 

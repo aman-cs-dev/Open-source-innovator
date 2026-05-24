@@ -67,7 +67,7 @@ async def read_file(file: UploadFile):
 
         # for csv or excel file
         elif (filename.endswith(".csv")) or filename.endswith(".xls") or filename.endswith(".xlsx"):
-            df = pd.read_csv(io.BytesIO(content))
+            df = pd.read_csv(io.BytesIO(content), header=None)
             df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
             final_input = df.to_dict(orient='list')   
 

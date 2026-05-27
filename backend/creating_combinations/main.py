@@ -43,6 +43,19 @@ app.add_middleware(
     expose_headers=["Content-Disposition"],  # so React can read filename header
 )
 
+# checks if the list is separated by comma or new line
+def check_list_type(raw_text:str) -> list[str]:
+
+    flattened = " ".join(raw_text.split())
+    
+    if "," in flattened:
+        # Comma-separated (handles single line, wrapped across lines, anything)
+        return [item.strip() for item in flattened.split(",") if item.strip()]
+    else:
+        # Newline-separated — iterate over ALL lines not just lines[0]
+        return [line.strip() for line in raw_text.split("\n") if line.strip()]
+    
+    
 # reads the inputted file to find the inputs
 @app.post("/read-file")
 async def read_file(file: UploadFile):
@@ -50,7 +63,6 @@ async def read_file(file: UploadFile):
         content = await file.read()
         filename = file.filename.lower()
 
-        # Reject empty file immediately
         if not content or not content.strip():
             return JSONResponse({"status": "error", "reason": "File is empty."})
 
@@ -59,37 +71,46 @@ async def read_file(file: UploadFile):
         # PDF
         if filename.endswith(".pdf"):
             with pdfplumber.open(io.BytesIO(content)) as pdf:
+                all_text = []
                 for page in pdf.pages:
                     text = page.extract_text()
                     if text:
-                        for line in text.split("\n"):
-                            line = line.strip()
-                            if line:
-                                final_items.append(line)
+                        all_text.append(text)
+            final_items = check_list_type("\n".join(all_text))
 
         # Word
         elif filename.endswith(".docx"):
             doc = Document(io.BytesIO(content))
-            for para in doc.paragraphs:
-                line = para.text.strip()
-                if line:
-                    final_items.append(line)
+            raw = "\n".join(p.text.strip() for p in doc.paragraphs if p.text.strip())
+            final_items = check_list_type(raw)
 
         # CSV / Excel
         elif filename.endswith(".csv") or filename.endswith(".xls") or filename.endswith(".xlsx"):
-            df = pd.read_csv(io.BytesIO(content), header=None)
+           
+            if filename.endswith(".csv"):
+              df = pd.read_csv(io.BytesIO(content), header=None, encoding='utf-8-sig')
+            else:
+              df = pd.read_excel(io.BytesIO(content), header=None)
+
+            df = df.dropna(axis=1, how='all')  # drop empty columns
+            df = df.dropna(axis=0, how='all')  # drop empty rows
+
+            # if items go across columns (1 row, many columns) 
+            if df.shape[0] == 1 and df.shape[1] > 1:
+                df = df.T.reset_index(drop=True)
+                df.columns = range(df.shape[1])  # rename columns 0, 1, 2...
+
             df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
 
             if df.shape[1] > 1:
-                return JSONResponse({"status": "error", "reason": "Multiple columns detected. Upload a single-column list."})
+              return JSONResponse({"status": "error", "reason": "Multiple columns detected. Upload a single-column list."})
 
-            final_items = df[0].dropna().astype(str).tolist()
-            final_items = [i for i in final_items if i.strip()]
+            raw = "\n".join(df[0].dropna().astype(str).tolist())
+            final_items = check_list_type(raw)
 
         else:
             return JSONResponse({"status": "error", "reason": "Unsupported file type. Please upload a CSV, PDF, or DOCX."})
 
-        # Final empty check (valid file but no extractable content)
         if not final_items:
             return JSONResponse({"status": "error", "reason": "File is empty or no readable content found."})
 

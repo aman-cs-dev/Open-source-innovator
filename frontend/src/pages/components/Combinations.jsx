@@ -1144,7 +1144,7 @@ const generateCombos = async ({ size, weight_step }) => {
         <div style={{ background: "rgba(255,255,255,0.03)", padding: 16, borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)" }}>
           <p style={{ color: "#6ad9ff", fontWeight: 900, fontSize: 13, marginBottom: 8 }}>✅ REQUIRED FORMAT</p>
           <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 13, lineHeight: 1.5 }}>
-            Each material or concept must be on a <strong>new line</strong>. Do not include headers, titles, or multiple items per line.
+            Each material or concept must be separated by a <strong>new line</strong> or <strong> Comma</strong>. Do not include headers, titles, or multiple items per line.
           </p>
         </div>
 
@@ -1158,9 +1158,31 @@ const generateCombos = async ({ size, weight_step }) => {
             Ammonia <br/>
             Hydrochloric Acid 
           </div>
-        </div>
+          </div>
+
+        {/* SECTION 2: FORMAT */}
+        <div style={{ background: "rgba(255,255,255,0.03)", padding: 16, borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)" }}>
+          <p style={{ color: "#6ad9ff", fontWeight: 900, fontSize: 13, marginBottom: 8 }}>📄 EXAMPLE 2</p>
+           <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, fontFamily: "monospace", paddingLeft: 8 }}></div>
+          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 13, lineHeight: 1.5 }}>
+            Sulfuric Acid , Sodium Chloride , Ethanol , Ammonia , Hydrochloric Acid
+          </p>
+        
+
+      </div>  
       </div>
-      {/* SCROLLABLE CONTAINER END */}
+
+      
+      
+
+
+
+      {/* SCROLLABLE CONTAINER  EXAMPLE 2 */}
+
+      
+      
+      
+
 
       <button 
         onClick={() => setHelpModalOpen(false)} 
